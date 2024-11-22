@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\EstudianteModel;
+use App\Models\NotaModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use PHPUnit\Event\Test\TestStubCreated;
@@ -65,17 +66,43 @@ class EstudianteController extends Controller
     public function show($cod)
     {
         $student = EstudianteModel::find($cod);
-
+    
         if (!$student) {
             $data = [
-                'messague' => 'Estudiante no encontrado',
+                'mensaje' => 'Estudiante no encontrado',
                 'status' => 404
             ];
             return response()->json($data, 404);
         }
-
+    
+        $notas = NotaModel::where('codEstudiante', $cod)->get();
+    
+        if ($notas->isEmpty()) {
+            $data = [
+                'cod' => $student->cod,
+                'nombre' => $student->nombres,
+                'email' => $student->email,
+                'notaDefinitiva' => 'Sin registrar',
+                'estado' => 'Sin registrar',
+                'status' => 200
+            ];
+            return response()->json($data, 200);
+        }
+    
+        $sumaNotas = $notas->sum('nota');
+        $promedio = $sumaNotas / $notas->count();
+    
+        $estado = 'Reprobado';
+        if ($promedio > 3) {
+            $estado = 'Aprobado';
+        }
+    
         $data = [
-            'student' => $student,
+            'cod' => $student->cod,
+            'nombre' => $student->nombres,
+            'email' => $student->email,
+            'notaDefinitiva' => number_format($promedio, 2),
+            'estado' => $estado,
             'status' => 200
         ];
         return response()->json($data, 200);
@@ -84,19 +111,21 @@ class EstudianteController extends Controller
     public function destroy($cod)
     {
         $student = EstudianteModel::find($cod);
-
+    
         if (!$student) {
             $data = [
-                'messague' => 'Estudiante no encontrado',
+                'mensaje' => 'Estudiante no encontrado',
                 'status' => 404
             ];
             return response()->json($data, 404);
         }
-
+    
+        NotaModel::where('codEstudiante', $cod)->delete();
+    
         $student->delete();
-
+    
         $data = [
-            'message' => 'Estudiante eliminado',
+            'mensaje' => 'Estudiante y sus notas eliminados',
             'status' => 200
         ];
         return response()->json($data, 200);

@@ -1,8 +1,8 @@
 ### Consultar todos los estudiantes
 GET http://127.0.0.1:8000/api/app/estudiante/
 
-### Consultar un solo estudiante
-GET http://127.0.0.1:8000/api/app/estudiante/1055
+### Consultar un solo estudiante y mirar sus notas
+GET http://127.0.0.1:8000/api/app/estudiante/5678
 
 ### Eliminar estudiante
 
